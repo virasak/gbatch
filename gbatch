@@ -9,7 +9,7 @@ scriptDir.eachFileMatch(~/S.*\.groovy/) { file ->
 
 if (scriptFiles) {
   def binding = new Binding()
-  TERMINATE_SCRIPT = new Object()
+  def TERMINATE_SCRIPT = new Object()
   binding.setVariable('TERMINATE_SCRIPT', TERMINATE_SCRIPT)
   def shell = new GroovyShell(binding)
   scriptFiles.sort().every { file ->
