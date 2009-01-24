@@ -1,0 +1,22 @@
+#!/usr/bin/env groovy
+
+def scriptDir = new File('.')
+
+def scriptFiles = []
+scriptDir.eachFileMatch(~/S.*\.groovy/) { file ->
+  scriptFiles << file
+}
+
+if (scriptFiles) {
+  def binding = new Binding()
+  TERMINATE_SCRIPT = new Object()
+  binding.setVariable('TERMINATE_SCRIPT', TERMINATE_SCRIPT)
+  def shell = new GroovyShell(binding)
+  scriptFiles.sort().every { file ->
+    println "process '${file.name}' file"
+
+    TERMINATE_SCRIPT != shell.evaluate(file) 
+  }
+} else {
+  println "Script file is not found"
+}
