@@ -5,10 +5,11 @@ cli.h(longOpt:'help', required:false, 'show usage')
 cli.d(longOpt:'directory', required:false, args:1, 'Script directory')
 cli.t(longOpt:'target', required:false, args:1, 'stop after run the target script')
 cli.p(longOpt:'print', required:false, 'print target names')
+cli.usage = 'Usage: gbatch [-h] [-p] [-d dir] [-t target] (setup|teardown)'
 
 def opt = cli.parse(args)
 
-if (opt.h) {
+if (!opt || opt.h || opt.arguments().size() != 1 || !['setup', 'teardown'].contains(opt.arguments()[0])) {
   cli.usage()
   return
 }
@@ -19,11 +20,13 @@ if (opt.d) {
   scriptDir = new File(opt.d)
 }
 
-println 'process on "' + scriptDir.path + '" directory'
+def operator = opt.arguments()[0]
+println """ ${operator} on "${scriptDir.path}" directory"""
 
 // list all script files in target directory
 def scriptFiles = []
 def pattern = ~/S(\d+)_(.*)\.groovy/
+
 scriptDir.eachFileMatch(pattern) { 
     def matcher = it.name =~ pattern
     scriptFiles << ([file:it, order:matcher[0][1], target:matcher[0][2]])
@@ -59,6 +62,20 @@ if (opt.t) {
 if (!scriptFiles) {
   println "Script file is not found"
   return
+}
+
+if (operator == 'teardown') {
+  scriptFiles.each {
+    it.file = new File(scriptDir, 'K' + it.file.name[1..-1])
+  }
+  def missingScriptFiles = scriptFiles.findAll { !it.file.exists() }
+  if (missingScriptFiles) {
+    println "Not found: "
+    missingScriptFiles.each { println "\t${it.file.name}" }
+    return
+  }
+  
+  scriptFiles = scriptFiles.reverse()
 }
 
 def binding = new Binding()
