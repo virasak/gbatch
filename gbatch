@@ -4,6 +4,7 @@ def cli = new CliBuilder()
 cli.h(longOpt:'help', required:false, 'show usage')
 cli.d(longOpt:'directory', required:false, args:1, 'Script directory')
 cli.t(longOpt:'target', required:false, args:1, 'stop after run the target script')
+cli.p(longOpt:'print', required:false, 'print target names')
 
 def opt = cli.parse(args)
 
@@ -30,6 +31,13 @@ scriptDir.eachFileMatch(pattern) {
 
 // sort by order number ( S[ordernumber]_[target].groovy )
 scriptFiles.sort { it.order }
+
+if (opt.p) {
+  scriptFiles.each {
+    println "${it.order}\t${it.target}"
+  }
+  return 
+}
 
 // if need to run upto specific target
 if (opt.t) {
