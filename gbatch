@@ -78,6 +78,11 @@ if (operator == 'teardown') {
   scriptFiles = scriptFiles.reverse()
 }
 
+def initScriptFile = new File(scriptDir, "__init__.groovy")
+if (initScriptFile.exists()) {
+  scriptFiles = [[file:initScriptFile, order:'SK', target:'__init__']] + scriptFiles
+}
+
 def binding = new Binding()
 def TERMINATE_SCRIPT = new Object()
 binding.setVariable('TERMINATE_SCRIPT', TERMINATE_SCRIPT) // return TERMINATE_SCRIPT to stop batch

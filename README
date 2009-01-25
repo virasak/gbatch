@@ -17,6 +17,7 @@ Usage:
        K[order]_[target name].groovy
     for teardown script. If run in teardown mode, both S and K files have to exists
 
+  - Create __init__.groovy script to be the first running script of both setup and teardown (if need)
 
   - Run setup batch:
      gbatch setup
