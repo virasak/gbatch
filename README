@@ -1,1 +1,34 @@
-GBatch - Simple batch Groovy script
+GBatch - Simple Groovy script batch
+===================================
+
+Features:
+ - Run series of Groovy script by order
+
+ - All scripts are shared binding context
+
+ - Run script upto specific target
+
+ - Support both forword and reverse batch order (setup and teardown)
+
+Usage:
+  - Create series of Groovy script which have file name format like:
+       S[order]_[target name].groovy
+    for setup script and
+       K[order]_[target name].groovy
+    for teardown script. If run in teardown mode, both S and K files have to exists
+
+
+  - Run setup batch:
+     gbatch setup
+
+  - Print all target names
+     gbatch -p
+
+  - Run teardown batch:
+     gbatch teardown
+
+  - Run setup scripts in other directory
+     gbatch -d [script directory] setup
+
+  - Run upto specific target name
+     gbatch -t [target name] setup
