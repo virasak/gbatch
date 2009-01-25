@@ -1,22 +1,65 @@
 #!/usr/bin/env groovy
 
-def scriptDir = new File('.')
+def cli = new CliBuilder()
+cli.h(longOpt:'help', required:false, 'show usage')
+cli.d(longOpt:'directory', required:false, args:1, 'Script directory')
+cli.t(longOpt:'target', required:false, args:1, 'stop after run the target script')
 
-def scriptFiles = []
-scriptDir.eachFileMatch(~/S.*\.groovy/) { file ->
-  scriptFiles << file
+def opt = cli.parse(args)
+
+if (opt.h) {
+  cli.usage()
+  return
 }
 
-if (scriptFiles) {
-  def binding = new Binding()
-  def TERMINATE_SCRIPT = new Object()
-  binding.setVariable('TERMINATE_SCRIPT', TERMINATE_SCRIPT)
-  def shell = new GroovyShell(binding)
-  scriptFiles.sort().every { file ->
-    println "process '${file.name}' file"
+def scriptDir = new File('.')
 
-    TERMINATE_SCRIPT != shell.evaluate(file) 
+if (opt.d) {
+  scriptDir = new File(opt.d)
+}
+
+println 'process on "' + scriptDir.path + '" directory'
+
+// list all script files in target directory
+def scriptFiles = []
+def pattern = ~/S(\d+)_(.*)\.groovy/
+scriptDir.eachFileMatch(pattern) { 
+    def matcher = it.name =~ pattern
+    scriptFiles << ([file:it, order:matcher[0][1], target:matcher[0][2]])
+}
+
+// sort by order number ( S[ordernumber]_[target].groovy )
+scriptFiles.sort { it.order }
+
+// if need to run upto specific target
+if (opt.t) {
+  def target = opt.t
+
+  // find if target is exists
+  def index =  scriptFiles.findIndexOf { it.target == target }
+
+  if (index == -1) {
+    println "${target} target does not found"
+    return
   }
-} else {
+
+  // trim upto target
+  scriptFiles = scriptFiles[0..index]
+}
+
+// if found at least one script file
+if (!scriptFiles) {
   println "Script file is not found"
+  return
+}
+
+def binding = new Binding()
+def TERMINATE_SCRIPT = new Object()
+binding.setVariable('TERMINATE_SCRIPT', TERMINATE_SCRIPT) // return TERMINATE_SCRIPT to stop batch
+binding.setVariable('__SCRIPT_DIR__', scriptDir)
+def shell = new GroovyShell(binding)
+
+scriptFiles.every { 
+  println "process '${it.target}' target"
+  TERMINATE_SCRIPT != shell.evaluate(it.file) 
 }
