@@ -14,11 +14,7 @@ if (!opt || opt.h || opt.arguments().size() != 1 || !['setup', 'teardown'].conta
   return
 }
 
-def scriptDir = new File('.')
-
-if (opt.d) {
-  scriptDir = new File(opt.d)
-}
+def scriptDir = new File(opt.d?: '.')
 
 def operator = opt.arguments()[0]
 println """ ${operator} on "${scriptDir.path}" directory"""
