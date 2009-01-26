@@ -21,8 +21,8 @@ if (!scriptDir.isDirectory()) {
   return
 }
 
-def operator = opt.arguments()[0]
-println """ ${operator} on "${scriptDir.path}" directory"""
+def mode = opt.arguments()[0]
+println """ ${mode} on "${scriptDir.path}" directory"""
 
 // list all script files in target directory
 def scriptFiles = []
@@ -59,13 +59,13 @@ if (opt.t) {
   scriptFiles = scriptFiles[0..index]
 }
 
-// if found at least one script file
 if (!scriptFiles) {
   println "Script file is not found"
   return
 }
 
-if (operator == 'teardown') {
+// reverse target if in teardown mode
+if (mode == 'teardown') {
   scriptFiles.each {
     it.file = new File(scriptDir, 'K' + it.file.name[1..-1])
   }
@@ -79,10 +79,13 @@ if (operator == 'teardown') {
   scriptFiles = scriptFiles.reverse()
 }
 
+
+// find the init script of both setup and teardown mode
 def initScriptFile = new File(scriptDir, "__init__.groovy")
 if (initScriptFile.exists()) {
   scriptFiles = [[file:initScriptFile, order:'SK', target:'__init__']] + scriptFiles
 }
+
 
 def binding = new Binding()
 def TERMINATE_SCRIPT = new Object()
@@ -90,6 +93,8 @@ binding.setVariable('TERMINATE_SCRIPT', TERMINATE_SCRIPT) // return TERMINATE_SC
 binding.setVariable('__SCRIPT_DIR__', scriptDir)
 def shell = new GroovyShell(binding)
 
+// process each script
+// if any script return TERMINATE_SCRIPT, exit the batch
 scriptFiles.every { 
   println "process '${it.target}' target"
   TERMINATE_SCRIPT != shell.evaluate(it.file) 
