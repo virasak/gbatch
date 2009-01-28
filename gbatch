@@ -87,15 +87,16 @@ if (initScriptFile.exists()) {
 }
 
 
+// prepare shell and binding
 def binding = new Binding()
 def TERMINATE_SCRIPT = new Object()
 binding.setVariable('TERMINATE_SCRIPT', TERMINATE_SCRIPT) // return TERMINATE_SCRIPT to stop batch
-binding.setVariable('__SCRIPT_DIR__', scriptDir)
 def shell = new GroovyShell(binding)
 
 // process each script
 // if any script return TERMINATE_SCRIPT, exit the batch
 scriptFiles.every { 
   println "process '${it.target}' target"
+  binding.setVariable('__FILE__', it.file)
   TERMINATE_SCRIPT != shell.evaluate(it.file) 
 }
