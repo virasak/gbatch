@@ -95,8 +95,14 @@ def shell = new GroovyShell(binding)
 
 // process each script
 // if any script return TERMINATE_SCRIPT, exit the batch
-scriptFiles.every { 
+def finished = scriptFiles.every { 
   println "process '${it.target}' target"
   binding.setVariable('__FILE__', it.file)
   TERMINATE_SCRIPT != shell.evaluate(it.file) 
+}
+
+if (finished) {
+  println 'complete all targets'
+} else {
+  println 'current target has returned TERMINATE_SCRIPT'
 }
